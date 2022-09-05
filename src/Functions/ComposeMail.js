@@ -6,14 +6,15 @@ import swal from "sweetalert";
 import { sendActions } from "../Store";
 import { useSelector, useDispatch } from "react-redux";
 import { useRef } from "react";
+import classes from "./ComposeMail.module.css";
+import './SendMailButton.css';
 
 const ComposeMail = () => {
     const dispatch = useDispatch();
-    const send = useSelector((state) => state.send.items);
     const email = useSelector((state) => state.auth.email);
     const enteredEmailRef = useRef();
     const enteredSubRef = useRef();
-    console.log(send);
+   
 const [editorState, setEditorState] = useState(() => {
     EditorState.createEmpty();
   });
@@ -28,7 +29,7 @@ const submitHandler = (event) => {
     event.preventDefault();
     const enteredEmail = enteredEmailRef.current.value;
     const enteredSub = enteredSubRef.current.value;
-    const toUser = enteredEmail.replace(/[^a-zA-Z]/g, "");
+    const toUser = enteredEmail.replace('@','').replace('.','');
     const item = editorState.getCurrentContent().getPlainText();
 
     const input = {
@@ -39,6 +40,7 @@ const submitHandler = (event) => {
         date: new Date().toString(),
         seen: false,
     };
+    console.log(input);
     fetch(
         `https://react-http-61cce-default-rtdb.firebaseio.com/${toUser}/inbox.json`,
         {
@@ -48,7 +50,7 @@ const submitHandler = (event) => {
     ).then((res) => {
         if(res.ok){
             swal("Mail Sent","Successfully!");
-            dispatch(sendActions.addSend(input));
+            dispatch(sendActions.sendMail(input));
             fetch(
                 `https://react-http-61cce-default-rtdb.firebaseio.com/${email}/sent.json`,
                 {
@@ -66,19 +68,19 @@ const submitHandler = (event) => {
         console.log(err);
     });
     console.log(input);
-}
+ }
   
   return (
-    <div>
-      <form onSubmit={submitHandler}>
-        <div>
+    <div className={classes.mail}>
+      <form onSubmit={submitHandler} className={classes.form}>
+        <div className={classes.intro}>
             <h2>New Email</h2>
         </div>
-        <div>
+        <div className={classes.to}>
             <label>To</label>
             <input type='email' id='mailId' ref={enteredEmailRef} required/>
         </div>
-        <div>
+        <div className={classes.to}>
             <label>Subject</label>
             <input type='text' ref={enteredSubRef}/>
         </div>
@@ -89,7 +91,9 @@ const submitHandler = (event) => {
           editorClassName="editorClassName"
           onEditorStateChange={editorChangeHandler}
         />
-        <button>Send Mail</button>
+        <div>
+        <button className="bn5">Send Mail</button>
+        </div>
       </form>
     </div>
   );
